@@ -103,9 +103,6 @@ plot_two_columns(df, 'S', 'BETY', 'Beta Y vs S Position')
 # Plot both beta functions together
 plot_multiple_columns(df, 'S', ['BETX', 'BETY'], 'Beta Functions vs S')
 
-# Plot dispersion
-plot_two_columns(df, 'S', 'DX', 'Horizontal Dispersion vs S')
-
 # Plot alpha functions
 plot_multiple_columns(df, 'S', ['ALFX', 'ALFY'], 'Alpha Functions vs S')
 
