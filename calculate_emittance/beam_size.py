@@ -1,3 +1,10 @@
+#this file first uses the global emittance to calculate the normalized emittance
+#then it uses normalized emittance to calculate and plot the beam size as a function of s
+
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from twiss_plots import read_outx_file, plot_two_columns, plot_multiple_columns
 import math
 import pandas as pd
@@ -5,14 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def read_outx_with_headers(filename):
-    """
-    Read MAD-X TWISS output file including header parameters.
     
-    Returns:
-        tuple: (params_dict, dataframe)
-            - params_dict: Dictionary of header parameters from @ lines
-            - dataframe: Pandas DataFrame with table data
-    """
     params = {}
     
     with open(filename, 'r') as f:
@@ -131,16 +131,9 @@ if df is not None:
     min_x_idx = df['SIGMA_X'].idxmin()
     min_y_idx = df['SIGMA_Y'].idxmin()
     
-    print(f"\nMinimum beam sizes:")
-    print(f"  At {df.loc[min_x_idx, 'NAME']}: σₓ = {df.loc[min_x_idx, 'SIGMA_X_UM']:.3f} μm")
-    print(f"  At {df.loc[min_y_idx, 'NAME']}: σᵧ = {df.loc[min_y_idx, 'SIGMA_Y_UM']:.3f} μm")
-    
-    # Plot horizontal beam size
     plot_two_columns(df, 'S', 'SIGMA_X_UM', title='Horizontal Beam Size σₓ [μm] vs S [m]')
     
-    # Plot vertical beam size
     plot_two_columns(df, 'S', 'SIGMA_Y_UM', title='Vertical Beam Size σᵧ [μm] vs S [m]')
     
-    # Plot both beam sizes together
     plot_multiple_columns(df, 'S', ['SIGMA_X_UM', 'SIGMA_Y_UM'], 
                           title='Beam Sizes along IR1')
