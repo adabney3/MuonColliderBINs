@@ -127,16 +127,9 @@ def calculate_and_plot_beam_sizes(params, df, plot=True):
     df['NORM_EX'] = norm_ex
     df['NORM_EY'] = norm_ey
     
-    # Print beam sizes at key locations
-    print("\nBeam sizes at key locations:")
-    print(df[['NAME', 'S', 'BETX', 'BETY', 'SIGMA_X_UM', 'SIGMA_Y_UM']].head(10))
-    
     # Find minimum beam sizes (at IP)
     min_x_idx = df['SIGMA_X'].idxmin()
     min_y_idx = df['SIGMA_Y'].idxmin()
-    
-    print(f"\nMinimum horizontal beam size: {df.loc[min_x_idx, 'SIGMA_X_UM']:.2f} μm at s = {df.loc[min_x_idx, 'S']:.2f} m ({df.loc[min_x_idx, 'NAME']})")
-    print(f"Minimum vertical beam size: {df.loc[min_y_idx, 'SIGMA_Y_UM']:.2f} μm at s = {df.loc[min_y_idx, 'S']:.2f} m ({df.loc[min_y_idx, 'NAME']})")
     
     if plot:
         plot_two_columns(df, 'S', 'SIGMA_X_UM', title='Horizontal Beam Size σₓ [μm] vs S [m]')

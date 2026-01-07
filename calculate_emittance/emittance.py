@@ -69,6 +69,85 @@ def calculate_particle_coordinates(df, params, phi=0, n_particles=100):
         'phi': phi_array
     }
 
+def calculate_emittance_vs_s(df, params, n_particles=100):
+    """
+    Calculate emittance at each s position to verify it's conserved.
+    
+    For each particle: ε = γ(s)*x²(s) + 2*α(s)*x(s)*x'(s) + β(s)*x'²(s)
+    where γ = (1 + α²)/β
+    
+    Returns the mean emittance at each s position (should be constant = EX or EY)
+    """
+    # Get particle coordinates
+    coords = calculate_particle_coordinates(df, params, n_particles=n_particles)
+    
+    # Calculate emittance for horizontal plane at each s
+    epsilon_x_at_s = []
+    epsilon_y_at_s = []
+    
+    for i, (idx, row) in enumerate(df.iterrows()):
+        # Horizontal plane
+        beta_x = row['BETX']
+        alpha_x = row['ALFX']
+        gamma_x = (1 + alpha_x**2) / beta_x
+        
+        # Get all particle coordinates at this s
+        x = coords['x'][i, :]
+        xp = coords['xp'][i, :]
+        
+        # Calculate emittance for each particle
+        eps_x = gamma_x * x**2 + 2 * alpha_x * x * xp + beta_x * xp**2
+        
+        # Store mean emittance at this s
+        epsilon_x_at_s.append(np.mean(eps_x))
+        
+        # Vertical plane
+        beta_y = row['BETY']
+        alpha_y = row['ALFY']
+        gamma_y = (1 + alpha_y**2) / beta_y
+        
+        y = coords['y'][i, :]
+        yp = coords['yp'][i, :]
+        
+        eps_y = gamma_y * y**2 + 2 * alpha_y * y * yp + beta_y * yp**2
+        epsilon_y_at_s.append(np.mean(eps_y))
+    
+    # Add to dataframe
+    df['EPSILON_X_CALC'] = epsilon_x_at_s
+    df['EPSILON_Y_CALC'] = epsilon_y_at_s
+    
+    return df
+
+def plot_emittance_vs_s(df, params):
+    """Plot calculated emittance vs s to verify conservation"""
+    
+    epsilon_x_header = params.get('EX', 0)
+    epsilon_y_header = params.get('EY', 0)
+    
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8), sharex=True)
+    
+    # Horizontal emittance
+    ax1.plot(df['S'], df['EPSILON_X_CALC'] * 1e6, 'b-', linewidth=2, label='Calculated εₓ')
+    ax1.axhline(y=epsilon_x_header * 1e6, color='r', linestyle='--', linewidth=2, 
+                label=f'Header value εₓ = {epsilon_x_header*1e6:.3f} μm')
+    ax1.set_ylabel('Horizontal Emittance εₓ [μm]')
+    ax1.set_title('Emittance Conservation Check')
+    ax1.legend()
+    ax1.grid(True, alpha=0.3)
+    
+    # Vertical emittance
+    ax2.plot(df['S'], df['EPSILON_Y_CALC'] * 1e6, 'r-', linewidth=2, label='Calculated εᵧ')
+    ax2.axhline(y=epsilon_y_header * 1e6, color='b', linestyle='--', linewidth=2,
+                label=f'Header value εᵧ = {epsilon_y_header*1e6:.3f} μm')
+    ax2.set_xlabel('s [m]')
+    ax2.set_ylabel('Vertical Emittance εᵧ [μm]')
+    ax2.legend()
+    ax2.grid(True, alpha=0.3)
+    
+    plt.tight_layout()
+    plt.show()
+    
+
 def plot_emittance_evolution(df, params, filename='twiss_IR_v09.outx'):
     """Plot emittance ellipses at different s positions"""
     
@@ -129,68 +208,16 @@ def plot_emittance_evolution(df, params, filename='twiss_IR_v09.outx'):
     plt.tight_layout()
     plt.show()
 
-def plot_phase_space_at_location(df, params, s_location=None, element_name=None):
-    """Plot phase space at a specific location"""
-    
-    if element_name:
-        row = df[df['NAME'] == element_name].iloc[0]
-    elif s_location is not None:
-        idx = (df['S'] - s_location).abs().argmin()
-        row = df.iloc[idx]
-    else:
-        # Use IP (middle of the beamline)
-        idx = len(df) // 2
-        row = df.iloc[idx]
-    
-    s_pos = row['S']
-    name = row['NAME']
-    
-    # Generate coordinates at this location
-    coords = calculate_particle_coordinates(df, params, n_particles=1000)
-    
-    # Find index for this s position
-    idx = df[df['S'] == s_pos].index[0]
-    
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
-    
-    # Horizontal phase space
-    x = coords['x'][idx, :] * 1e3
-    xp = coords['xp'][idx, :] * 1e3
-    ax1.plot(x, xp, 'b.', markersize=2, alpha=0.5)
-    ax1.set_xlabel('x [mm]')
-    ax1.set_ylabel("x' [mrad]")
-    ax1.set_title(f'Horizontal Phase Space at s={s_pos:.2f} m\n{name}')
-    ax1.grid(True, alpha=0.3)
-    ax1.axis('equal')
-    
-    # Vertical phase space
-    y = coords['y'][idx, :] * 1e3
-    yp = coords['yp'][idx, :] * 1e3
-    ax2.plot(y, yp, 'r.', markersize=2, alpha=0.5)
-    ax2.set_xlabel('y [mm]')
-    ax2.set_ylabel("y' [mrad]")
-    ax2.set_title(f'Vertical Phase Space at s={s_pos:.2f} m\n{name}')
-    ax2.grid(True, alpha=0.3)
-    ax2.axis('equal')
-    
-    plt.tight_layout()
-    plt.show()
-
 # Main execution
 if __name__ == "__main__":
     filename = 'twiss_IR_v09.outx'
     
-    print("Reading TWISS data...")
     params, df = read_outx_with_headers(filename)
     
-    print("\nTWISS Parameters:")
-    print(f"  Particle: {params.get('PARTICLE', 'N/A')}")
-    print(f"  Energy: {params.get('ENERGY', 'N/A')} GeV")
-    print(f"  Horizontal emittance (EX): {params.get('EX', 0)*1e6:.6f} μm")
-    print(f"  Vertical emittance (EY): {params.get('EY', 0)*1e6:.6f} μm")
-
     df = compute_phase_advance(df)
-
+    
+    df = calculate_emittance_vs_s(df, params, n_particles=100)
+    
+    plot_emittance_vs_s(df, params)
+    
     plot_emittance_evolution(df, params, filename)
-
-    plot_phase_space_at_location(df, params, element_name='IP1')
