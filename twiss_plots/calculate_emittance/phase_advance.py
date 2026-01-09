@@ -72,7 +72,6 @@ def plot_results(df):
     axes[1, 1].legend()
     
     plt.tight_layout()
-    plt.savefig('phase_advance.png', dpi=300)
     plt.show()
 
 # Main execution

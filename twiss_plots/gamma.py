@@ -1,4 +1,4 @@
-from twiss_plots import read_outx_file, plot_single_column, plot_two_columns, plot_multiple_columns
+from beta_and_alpha import read_outx_file, plot_single_column, plot_two_columns, plot_multiple_columns
 import pandas as pd
 import matplotlib.pyplot as plt
 import math

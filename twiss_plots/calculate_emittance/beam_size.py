@@ -5,7 +5,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from twiss_plots import read_outx_file, plot_two_columns, plot_multiple_columns
+from beta_and_alpha import read_outx_file, plot_two_columns, plot_multiple_columns
 import math
 import pandas as pd
 import matplotlib.pyplot as plt
