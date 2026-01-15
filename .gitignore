@@ -1,0 +1,6 @@
+# Virtual environments
+xsuite_env/
+venv/
+env/
+*.pyc
+__pycache__/
