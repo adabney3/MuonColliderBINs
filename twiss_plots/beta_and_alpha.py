@@ -73,15 +73,33 @@ def plot_single_column(df, column_name, title=None):
     plt.tight_layout()
     plt.show()
 
-def plot_two_columns(df, x_col, y_col, title=None):
+def plot_two_columns(df, x_col, y_col, title):
+    # Dictionary of common units for beam optics parameters
+    units = {
+        'S': 'm',
+        'DX': 'm',
+        'DY': 'm',
+        'BETX': 'm',
+        'BETY': 'm',
+        'ALFX': '',
+        'ALFY': ''
+    }
+    
     plt.figure(figsize=(10, 6))
-    plt.plot(df[x_col], df[y_col], marker='o', markersize=3)
-    plt.xlabel(x_col)
-    plt.ylabel(y_col)
-    plt.title(title if title else f'{y_col} vs {x_col}')
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
+    plt.plot(df[x_col], df[y_col])
+    
+    x_unit = units.get(x_col, '')
+    y_unit = units.get(y_col, '')
+    
+    xlabel = f'{x_col} [{x_unit}]' if x_unit else x_col
+    ylabel = f'{y_col} [{y_unit}]' if y_unit else y_col
+    
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.title(title)
+    plt.grid(True)
     plt.show()
+
 
 def plot_multiple_columns(df, x_col, y_cols, title=None):
     plt.figure(figsize=(12, 6))
