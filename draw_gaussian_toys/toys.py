@@ -9,7 +9,6 @@ import xpart
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Parse the TWISS file
 def parse_madx_twiss(filename):
     """Parse a MADX TWISS output file (.outx)"""
     elements = []
@@ -17,7 +16,6 @@ def parse_madx_twiss(filename):
     with open(filename, 'r') as f:
         lines = f.readlines()
     
-    # Find the start of the data (after the * line with column names)
     data_start = None
     for i, line in enumerate(lines):
         if line.startswith('* NAME'):
@@ -27,7 +25,6 @@ def parse_madx_twiss(filename):
     if data_start is None:
         raise ValueError("Could not find data in TWISS file")
     
-    # Parse each element
     for line in lines[data_start:]:
         if not line.strip() or line.startswith('@') or line.startswith('*') or line.startswith('$'):
             continue
@@ -41,7 +38,6 @@ def parse_madx_twiss(filename):
         s = float(parts[2])
         length = float(parts[3])
         
-        # Get additional parameters based on element type
         angle = float(parts[6]) if len(parts) > 6 else 0.0
         k1l = float(parts[10]) if len(parts) > 10 else 0.0
         
@@ -56,7 +52,6 @@ def parse_madx_twiss(filename):
     
     return elements
 
-# Load and parse the TWISS file
 elements = parse_madx_twiss('twiss_IR_v09.outx')
 
 # Build xtrack line from elements
@@ -86,42 +81,45 @@ for elem in elements:
         line_elements.append(xt.Marker())
         element_names.append(name)
 
-# Create the line
 line = xt.Line(elements=line_elements, element_names=element_names)
 
-# Set reference particle (from TWISS file header: POSMUON at 5 TeV)
 line.particle_ref = xt.Particles(
     mass0=0.10565837550000000e9,  # eV
     q0=1.0,
     p0c=4999.99999888363072387e9  # eV
 )
 
-# Build tracker
 line.build_tracker()
 
 # Generate Gaussian distributed particles
 n_particles = 1000  # Number of particles
 
-particles = xpart.Particles(
-    p0c=5000e9,
-    x=np.random.normal(0, 1e-3, n_particles),      # Gaussian x with sigma=1mm
-    px=np.random.normal(0, 1e-6, n_particles),     # Gaussian px
-    y=np.random.normal(0, 1e-3, n_particles),      # Gaussian y with sigma=1mm
-    py=np.random.normal(0, 1e-6, n_particles),     # Gaussian py
-    zeta=np.random.normal(0, 0.01, n_particles),   # Gaussian z
-    delta=np.random.normal(0, 1e-4, n_particles),  # Gaussian momentum deviation
+# particles = xpart.Particles(
+#     p0c=5000e9,
+#     x=np.random.normal(0, 1e-3, n_particles),      # Gaussian x with sigma=1mm
+#     px=np.random.normal(0, 1e-6, n_particles),     # Gaussian px
+#     y=np.random.normal(0, 1e-3, n_particles),      # Gaussian y with sigma=1mm
+#     py=np.random.normal(0, 1e-6, n_particles),     # Gaussian py
+#     zeta=np.random.normal(0, 0.01, n_particles),   # Gaussian z
+#     delta=np.random.normal(0, 1e-4, n_particles),  # Gaussian momentum deviation
+# )
+
+# generate one six-dimensional gaussian
+particles = xpart.generate_matched_gaussian_bunch(
+    num_particles = n_particles,
+    nemitt_x= 'EX',
+    nemitt_y= 'EY',
+    sigma_z =  'SIGT',
+    line = line,
 )
 
 # Track particles
-line.track(particles, num_turns=100)
+line.track(particles, num_turns=10)
 
-# Analyze results
 print(f"Particles lost: {np.sum(particles.state <= 0)}")
 print(f"Particles surviving: {np.sum(particles.state > 0)}")
 print(f"Final x RMS: {np.std(particles.x[particles.state > 0]):.6e} m")
 
-# Plot the distribution
-# Filter for surviving particles only
 alive = particles.state > 0
 
 plt.figure(figsize=(12, 4))
