@@ -34,30 +34,24 @@ def get_twiss_parameters(filename):
 
 df = get_twiss_parameters('twiss_IR_v09.outx')
 
-if df is not None:
+idx = df['ALFX'].abs().idxmin()
+beta  = df['BETX'].loc[idx] #semi-major axis
+alpha = df['ALFX'].loc[idx] #alpha relates to tilt
+gamma = (1 + alpha**2) / beta  #semi-minor axis
+x = df['X']
+y = df['Y']
+epsilon = 0.00000000052830000  #emmittance (EX) found in header of file
 
-    #calculate gamma
-    df['GAMMAX_CALC'] = (1 + df['ALFX']**2) / df['BETX']
-    df['GAMMAY_CALC'] = (1 + df['ALFY']**2) / df['BETY']
-
-beta = df['BETX'] # semi-major axis
-gamma = df['GAMMAX_CALC']  # semi-minor axis
-x = df['X']  # center x
-y = df['Y']  # center y
-epsilon = 0.00000000052830000  #EX (emmitance) from twiss file header
-alpha = df['ALFX']  #alpha corresponds to tilt
-
-phi = (1/2) * np.arctan2(2 * df['ALFX'], df['BETX'] - df['GAMMAX_CALC'])
-theta = np.linspace(0, 2 * np.pi, 100)
-
-x = np.sqrt(epsilon * beta) * np.cos(theta)
-x_prime = -np.sqrt(epsilon / beta) * (alpha * np.cos(theta) + np.sin(theta))
+theta = np.linspace(0, 2 * np.pi, 500)
+x       =  np.sqrt(epsilon * beta) * np.cos(theta)
+x_prime = -np.sqrt(epsilon * gamma) * np.sin(theta) - (alpha / np.sqrt(beta)) * np.sqrt(epsilon) * np.cos(theta)
 
 plt.figure(figsize=(8, 6))
 plt.plot(x, x_prime, 'b-', linewidth=2)
-plt.axis('equal')
 plt.grid(True, alpha=0.3)
-plt.xlabel('x')
-plt.ylabel('y')
-plt.title('Ellipse')
+plt.xlabel("x [m]")
+plt.ylabel("x' [rad]")
+plt.title(f"Phase Space Ellipse (β={beta:.4f} m, α={alpha:.4e})")
+# No plt.axis('equal') !
+plt.tight_layout()
 plt.show()
