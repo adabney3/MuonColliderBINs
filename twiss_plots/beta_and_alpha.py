@@ -117,6 +117,7 @@ def plot_multiple_columns(df, x_col, y_cols, title=None):
 # Plot Beta functions vs S position
 plot_two_columns(df, 'S', 'BETX', 'Beta X vs S Position')
 plot_two_columns(df, 'S', 'BETY', 'Beta Y vs S Position')
+plot_two_columns(df, 'S', 'ALFX', 'Alpha X vs S Position')
 
 # Plot both beta functions together
 plot_multiple_columns(df, 'S', ['BETX', 'BETY'], 'Beta Functions vs S')
