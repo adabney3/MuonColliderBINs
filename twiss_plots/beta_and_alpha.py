@@ -101,12 +101,49 @@ def plot_two_columns(df, x_col, y_col, title):
     plt.show()
 
 
+# def plot_multiple_columns(df, x_col, y_cols, title=None):
+#     plt.figure(figsize=(12, 6))
+#     for y_col in y_cols:
+#         plt.plot(df[x_col], df[y_col], marker='o', markersize=3, label=y_col)
+#     plt.xlabel(x_col)
+#     plt.ylabel('Values')
+#     plt.title(title if title else 'Multiple Columns')
+#     plt.legend()
+#     plt.grid(True, alpha=0.3)
+#     plt.tight_layout()
+#     plt.show()
+
 def plot_multiple_columns(df, x_col, y_cols, title=None):
+    units = {
+        'S': 'm',
+        'DX': 'm',
+        'DY': 'm',
+        'BETX': 'm',
+        'BETY': 'm',
+        'ALFX': '',
+        'ALFY': ''
+    }
+
     plt.figure(figsize=(12, 6))
     for y_col in y_cols:
-        plt.plot(df[x_col], df[y_col], marker='o', markersize=3, label=y_col)
-    plt.xlabel(x_col)
-    plt.ylabel('Values')
+        y_unit = units.get(y_col, '')
+        label = f'{y_col} [{y_unit}]' if y_unit else y_col
+        plt.plot(df[x_col], df[y_col], marker='o', markersize=3, label=label)
+
+    x_unit = units.get(x_col, '')
+    xlabel = f'{x_col} [{x_unit}]' if x_unit else x_col
+
+    # Build y-axis label from unique units of plotted columns
+    y_units = list(dict.fromkeys(
+        units.get(col, '') for col in y_cols
+    ))
+    if len(y_units) == 1:
+        ylabel = f'Values [{y_units[0]}]' if y_units[0] else 'Values'
+    else:
+        ylabel = 'Values'
+
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
     plt.title(title if title else 'Multiple Columns')
     plt.legend()
     plt.grid(True, alpha=0.3)
