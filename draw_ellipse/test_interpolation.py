@@ -22,20 +22,31 @@ print("s range:", s_fine[0], "to", s_fine[-1])
 print("BETX range:", params['BETX'].min(), "to", params['BETX'].max())
 print("BETY range:", params['BETY'].min(), "to", params['BETY'].max())
 
+interp_df = pd.DataFrame({
+	'S': s_fine,
+	'BETX': params['BETX'],
+	'BETY': params['BETY'],
+	'ALFX': params['ALFX'],
+	'ALFY': params['ALFY'],
+})
+
+print("\nInterpolated Data:")
+print(interp_df.to_string(index=False, float_format='{:.6f}'.format))
+
 fig, axes = plt.subplots(2, 1, figsize=(12, 6), sharex=True)
 
-axes[0].plot(s_fine, params['BETX'], label='BETX interp', color='steelblue')
-axes[0].plot(s_fine, params['BETY'], label='BETY interp', color='tomato')
-axes[0].scatter(df['S'], df['BETX'], color='steelblue', s=20, zorder=5, label='BETX original')
-axes[0].scatter(df['S'], df['BETY'], color='tomato', s=20, zorder=5, label='BETY original')
+axes[0].plot(s_fine, params['BETX'], linestyle='none', marker='x', markersize=4, label='BETX interp', color='steelblue')
+axes[0].plot(s_fine, params['BETY'], linestyle='none', marker='x', markersize=4, label='BETY interp', color='tomato')
+axes[0].scatter(df['S'], df['BETX'], color='steelblue', s=20, zorder=5, marker='o', label='BETX original')
+axes[0].scatter(df['S'], df['BETY'], color='tomato', s=20, zorder=5, marker='o', label='BETY original')
 axes[0].set_ylabel('Beta function (m)')
 axes[0].legend()
 axes[0].grid(True)
 
-axes[1].plot(s_fine, params['ALFX'], label='ALFX interp', color='steelblue')
-axes[1].plot(s_fine, params['ALFY'], label='ALFY interp', color='tomato')
-axes[1].scatter(df['S'], df['ALFX'], color='steelblue', s=20, zorder=5, label='ALFX original')
-axes[1].scatter(df['S'], df['ALFY'], color='tomato', s=20, zorder=5, label='ALFY original')
+axes[1].plot(s_fine, params['ALFX'], linestyle='none', marker='x', markersize=4, label='ALFX interp', color='steelblue')
+axes[1].plot(s_fine, params['ALFY'], linestyle='none', marker='x', markersize=4, label='ALFY interp', color='tomato')
+axes[1].scatter(df['S'], df['ALFX'], color='steelblue', s=20, zorder=5, marker='o', label='ALFX original')
+axes[1].scatter(df['S'], df['ALFY'], color='tomato', s=20, zorder=5, marker='o', label='ALFY original')
 axes[1].set_ylabel('Alpha functions (m)')
 axes[1].set_xlabel('s (m)')
 axes[1].legend()
