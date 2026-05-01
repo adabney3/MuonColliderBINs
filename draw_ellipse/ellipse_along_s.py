@@ -45,7 +45,7 @@ from matplotlib.animation import FFMpegWriter
 #     plt.tight_layout()
 
 df = get_twiss_parameters('../twiss_IR_v09.outx')
-df_phys = df[df['BETX'] > 0].copy()  # drop markers with BETX=0
+df_phys = df[df['BETX'] > 0].copy()
 
 s_fine = np.linspace(df_phys['S'].min(), df_phys['S'].max(), 300)
 
