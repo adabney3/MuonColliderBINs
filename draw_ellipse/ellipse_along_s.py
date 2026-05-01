@@ -58,9 +58,8 @@ params = {
 emittance = 5.283e-10
 
 fig, axes = plt.subplots(1, 2, figsize=(12, 5))
-ax_x, ax_y = axes  # unpack once, reuse every frame
+ax_x, ax_y = axes 
 
-# Pre-compute axis limits across all frames
 all_ux, all_pux, all_uy, all_puy = [], [], [], []
 for i in range(len(s_fine)):
     ux, pux = phase_ellipse(params['BETX'][i], params['ALFX'][i], emittance)
@@ -84,7 +83,7 @@ ax_y.set_autoscale_on(False)
 plt.tight_layout()
 
 def animate(i):
-    ax_x.cla()  # clear artists only, limits will be re-applied below
+    ax_x.cla() 
     ax_y.cla()
 
     s = s_fine[i]
